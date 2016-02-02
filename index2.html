@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>GMRS Seating Chart</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+  <style>
+    .dialer {margin-top: 5%;}
+  	.group {}
+    .seat {min-height: 3em; margin-bottom: 2%;}
+    .seatnumber {font-weight:bolder; padding: 5px; width: 10em;}
+    .phoner {font-weight:bold; padding: 5px; font-size:2em;}
+  	.notworking {display:none;}
+  	.empty {display:none;}
+  </style>
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+
+</head>
+<body>
+
+	<script src="js/miso.ds.deps.ie.0.4.1.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+
+  <script>
+
+      function fillSeat(seatNumber, working, phonerLastName, phonerFirstName, projectName, startTime) {
+
+  	var seatingChart = document.getElementById("seatingchart");
+
+  	if (working && phonerLastName) {
+
+  	    newtr = document.createElement("tr");
+  	    newtr.className = "seat";
+  	    newtr.id = 'seat' + seatNumber.toString();
+  	    newtr.innerHTML = '<td class="seatnumber"></td><td class="phoner"></td><td class="project"></td><td class="starttime"></td>'
+
+  	    seatElement = newtr;
+  	    seatingChart.insertBefore(newtr, seatingChart.childNodes[0]);
+
+  	    var seatNumberSpan = seatElement.getElementsByClassName('seatnumber')[0];
+  	    seatNumberSpan.textContent = seatNumber.toString();
+
+  	    var phonerSpan = seatElement.getElementsByClassName('phoner')[0];
+  		phonerSpan.textContent = phonerLastName.toString() + ", " + phonerFirstName.toString();
+  	
+  		var projectSpan = seatElement.getElementsByClassName('project')[0];
+  		projectSpan.textContent = projectName.toString();
+  	
+  		var startTimeSpan = seatElement.getElementsByClassName('starttime')[0];
+  		startTimeSpan.textContent = startTime.toString();
+  	}
+  	return;
+  	
+  }
+
+  </script>
+
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <table class="u-full-width">
+        <thead>
+            <tr id="header"><th>Seat Number</th><th>Name</th><th>Project</th><th>Start Time</th></tr>
+        </thead>
+        <tbody id="seatingchart">
+        </tbody>
+    </table>
+
+<script>
+	  var ds = new Miso.Dataset({
+  importer : Miso.Dataset.Importers.GoogleSpreadsheet,
+  parser : Miso.Dataset.Parsers.GoogleSpreadsheet,
+  key : "1H5wpPXy5mMjOgrAHWCH-WI6BeEkZSfTrfxD0RoIIqdA",
+  worksheet : "1",
+  columns : [
+	  { name: 'Seat Number', type : 'number' },
+	  { name: 'Dialer', type : 'number' },
+	  { name: 'Working', type : 'number' },
+	  { name: 'Start Time', type : 'string' }
+  ]
+});
+
+ds.fetch({
+    success: function () {
+
+    this.sort(function (rowA, rowB) {
+        if (rowA['Interviewer Last Name'] > rowB['Interviewer Last Name']) {
+            return -1;
+        }
+        if (rowA['Interviewer Last Name'] < rowB['Interviewer Last Name']) {
+            return 1;
+        }
+        return 0;
+    });
+
+
+    this.each(function(row) {
+        fillSeat(row['Seat Number'], row['Working'], row['Interviewer Last Name'], row['Interviewer First Name'], row['Project'], row['Start Time']);
+    });
+  },
+  error : function() {
+    console.log("Are you sure you are connected to the internet?");
+  }
+});
+
+</script>
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>
